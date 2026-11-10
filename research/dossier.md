@@ -447,3 +447,56 @@ Note: UDAN is run by the Ministry of Civil Aviation. AAI awards and tracks the r
 **Caveat:** fly91.in could not be opened in this session, so "nothing found" means not seen in coverage, not proven absent. Check the site before the artefact claims a gap.
 
 **Implication for the storyline:** FLY91 has the basic transactional extras covered. What it lacks is everything that builds a relationship with the customer: loyalty, a card partner, and commerce around the trip. That gap is what a "Digital Entrepreneur" from e-commerce or fintech would build, and it gives the artefact its sharpest message.
+
+---
+
+## 13. The three 90-day experiments (agreed 10 Nov 2026)
+
+### 13.1 How candidates were scored
+
+Six tests, each scored 2 (yes), 1 (partly) or 0 (no):
+
+1. **Evidence:** the dossier's data supports it.
+2. **Shippable in 90 days:** no new aircraft, regulatory approval or bank contract needed.
+3. **Testable:** it can run against a control group, with one clear metric.
+4. **Material:** it moves revenue per passenger, acquisition cost or repeat business.
+5. **Builds on what FLY91 already has.**
+6. **Fits the role:** an e-commerce or fintech person is better placed to build it than an airline insider.
+
+| Candidate | Evid. | 90d | Test | Impact | Builds | Fit | Total |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| WhatsApp + UPI store after booking | 2 | 2 | 2 | 2 | 2 | 2 | **12** |
+| Destination bundles sold direct | 2 | 2 | 1 | 2 | 2 | 2 | **11** |
+| FLY91 Pass (prepaid flexible trips) | 1 | 2 | 2 | 2 | 2 | 2 | **11** |
+| Fare lock | 2 | 2 | 2 | 1 | 1 | 2 | 10 |
+| First-flyer acquisition in Tier-2 cities | 2 | 2 | 1 | 2 | 1 | 2 | 10 |
+| Ground transport from small airports | 1 | 2 | 2 | 1 | 0 | 1 | 7 |
+| Loyalty programme or co-branded card | 2 | 0 | 0 | 2 | 0 | 2 | 6 |
+| Paid seats, pre-booked meals | 1 | 2 | 2 | 0 | 1 | 0 | 6 |
+| Island cargo to Agatti | 1 | 0 | 0 | 1 | 0 | 0 | 2 |
+
+The scores are our judgement, shown so the reader can disagree with them. The artefact lets readers re-weight the tests.
+
+### 13.2 The picks: one per lever
+
+**1. WhatsApp + UPI store after booking (lever: revenue per passenger).**
+- **Idea:** offer SmartBag91, the Smart Ticket and a cab from the airport inside the WhatsApp chat after booking, paid with a one-tap UPI link.
+- **Metric:** ancillary revenue per passenger against a control group on today's journey.
+- **Stop if:** there is no meaningful uplift by day 60, or complaints rise.
+- **Rests on:** bot-first service with no call centre (§1.6); UPI's 24.07 bn transactions a month (§5.3).
+
+**2. Destination bundles sold direct (lever: direct share and margin).**
+- **Idea:** flight, Lakshadweep permit, stay and transfer in one booking that starts on fly91.in. It runs alongside the MakeMyTrip partnership, not instead of it.
+- **Timing:** the October–May season suits a test from November.
+- **Metric:** direct share of bookings, and margin per booking against the MakeMyTrip channel.
+- **Next market:** Goa (1.08 cr tourists a year) or Tirupati.
+
+**3. FLY91 Pass (lever: repeat business; the seed of loyalty).**
+- **Idea:** a prepaid bundle of 6 or 10 flexible sectors for business towns (Jalgaon, Solapur, Hubballi, Pune–Goa). It extends the ₹599 corporate Smart Ticket.
+- **Bonus:** the upfront cash supports the cash break-even target.
+- **Metric:** passes sold, how much of each pass gets used, and repeat trips against matched non-holders.
+- **Weakness:** no data on corporate demand. This is a question for Manoj.
+
+**Alternates:** fare lock (pay a small fee to hold a fare while fuel keeps pushing fares up); first-flyer acquisition (could become a feature of pick 1).
+
+**Framing rule:** FLY91 already does part of picks 1 and 2, so the pitch is "scale what works and make it testable". Starting figures and targets are left as "set with FLY91's data", never invented.

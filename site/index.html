@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Turboprop Dividend</title>
+<meta name="description" content="A data-driven flight through India's 2026 aviation shock, the turboprop opportunity, and three 90-day experiments for FLY91's digital commerce.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Night operations: deliberately a dark-only page */
+  --night:#0B1422; --panel:#111E31; --panel2:#16263D; --line:#24364F; --line2:#30476A;
+  --ink:#E8EEF6; --ink2:#B4C2D4; --muted:#8696AC;
+  --sign:#F2C230; --signink:#121212;           /* airfield direction sign: black on yellow */
+  --mand:#C8302F;                               /* mandatory sign: white on red */
+  --d1:#C98410; --d2:#3D8EF0; --d3:#16A274;     /* data marks, validated vs --panel */
+  --good:#3FB27F; --bad:#E5534B;                /* status, always with a label */
+  --strip:#EDE4CC; --stripink:#1E2330; --stripline:#B9AD8F;
+  --anno:#39D98A; --annoOff:#3A2E12;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  background-image:radial-gradient(1200px 600px at 80% -10%,#15284a 0%,transparent 60%);}
+a{color:var(--sign)}
+button{font:inherit;color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+
+/* ---------- flight progress bar ---------- */
+#fpl{position:sticky;top:0;z-index:20;background:rgba(11,20,34,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+#fpl .wrap{display:flex;align-items:center;gap:14px;height:52px}
+#fpl .code{font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.08em;color:var(--sign);white-space:nowrap}
+#track{position:relative;flex:1;height:30px}
+#track .rail{position:absolute;left:0;right:0;top:15px;border-top:2px dashed var(--line2)}
+#track .done{position:absolute;left:0;top:14px;height:4px;background:var(--sign);border-radius:2px;width:0}
+#track .stop{position:absolute;top:9px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--night);border:2px solid var(--line2);cursor:pointer;padding:0}
+#track .stop.on{border-color:var(--sign);background:var(--sign)}
+#track .stop span{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:var(--cond);font-size:11px;letter-spacing:.06em;color:var(--muted);white-space:nowrap;text-transform:uppercase}
+#plane{position:absolute;top:3px;width:26px;height:26px;margin-left:-13px;left:0;transition:left .15s linear}
+#phase{font-family:var(--cond);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;min-width:110px;text-align:right}
+@media (max-width:760px){#track .stop span{display:none}#phase{min-width:0}}
+
+/* ---------- hero ---------- */
+.hero{padding:56px 0 40px}
+.kicker{font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.flap{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 18px}
+.flap .w{display:flex;gap:3px;margin-right:12px}
+.flap .c{width:clamp(22px,4.6vw,46px);height:clamp(34px,7vw,68px);background:#0A0F18;border-radius:4px;display:grid;place-items:center;
+  font-family:var(--mono);font-weight:600;font-size:clamp(18px,4vw,40px);color:#F4F1E8;position:relative;box-shadow:inset 0 -2px 0 #000}
+.flap .c::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid #000}
+.lede{max-width:640px;font-size:19px;color:var(--ink2)}
+.bp{margin-top:34px;display:grid;grid-template-columns:1fr 210px;background:var(--strip);color:var(--stripink);border-radius:14px;overflow:hidden;max-width:820px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.bp .main{padding:20px 24px;border-right:2px dashed var(--stripline)}
+.bp .stub{padding:20px 18px;display:flex;flex-direction:column;justify-content:space-between}
+.bp .row{display:flex;gap:26px;flex-wrap:wrap}
+.bp .lbl{font-family:var(--cond);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6B6553}
+.bp .val{font-family:var(--mono);font-weight:600;font-size:15px}
+.bp .route{display:flex;align-items:center;gap:16px;margin:10px 0 14px}
+.bp .iata{font-family:var(--cond);font-weight:700;font-size:56px;line-height:1}
+.bp .city{font-size:13px;color:#5A5546}
+.bp .arrow{flex:1;border-top:2px dotted #8C826A;position:relative;min-width:40px}
+.bp .arrow svg{position:absolute;left:50%;top:-12px;transform:translateX(-50%)}
+.bp .board{margin-top:16px;display:inline-flex;gap:10px;align-items:center;background:var(--stripink);color:var(--strip);border:0;border-radius:8px;padding:10px 16px;font-family:var(--cond);font-size:16px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bp .board:hover{background:#000}
+@media (max-width:640px){.bp{grid-template-columns:1fr}.bp .main{border-right:0;border-bottom:2px dashed var(--stripline)}.bp .iata{font-size:44px}}
+
+/* ---------- sections ---------- */
+section.leg{padding:64px 0 30px;border-top:1px solid var(--line)}
+.sign{display:inline-flex;align-items:stretch;font-family:var(--cond);font-weight:700;font-size:18px;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;overflow:hidden;border:2px solid #000}
+.sign b{background:#111;color:var(--sign);padding:4px 10px}
+.sign i{font-style:normal;background:var(--sign);color:var(--signink);padding:4px 12px}
+.sign.mand b{background:var(--mand);color:#fff;border-right:2px solid #fff}
+.sign.mand i{background:var(--mand);color:#fff}
+h2{font-family:var(--cond);font-weight:700;font-size:clamp(32px,5vw,50px);line-height:1.02;margin:14px 0 10px;letter-spacing:.01em}
+h3{font-family:var(--cond);font-weight:600;font-size:22px;letter-spacing:.03em;margin:0 0 6px}
+.intro{max-width:720px;color:var(--ink2);font-size:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g21{grid-template-columns:2fr 1fr}
+.grid2>*,.g21>*{min-width:0}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}}
+.take{margin-top:20px;padding:14px 18px;border-left:4px solid var(--sign);background:var(--panel2);border-radius:0 10px 10px 0;font-size:18px}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.space{height:16px}
+
+/* grade badges */
+.g{display:inline-block;vertical-align:super;font-family:var(--mono);font-size:10px;font-weight:600;line-height:1;padding:2px 4px;margin-left:2px;border-radius:3px;border:1px solid var(--line2);color:var(--ink2);background:transparent;cursor:pointer}
+.g:hover,.g:focus-visible{border-color:var(--sign);color:var(--sign);outline:none}
+#pop{position:absolute;z-index:40;max-width:320px;background:#0A1220;border:1px solid var(--line2);border-radius:10px;padding:12px 14px;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.5);display:none}
+#pop .t{font-family:var(--mono);font-size:11px;color:var(--sign);letter-spacing:.08em;margin-bottom:4px}
+
+/* segmented controls */
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:3px;gap:2px;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-family:var(--cond);font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--sign);color:var(--signink)}
+.ctlrow{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 0}
+
+/* sliders */
+.sl{display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:12px;margin:10px 0}
+.sl label{font-family:var(--cond);font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2)}
+.sl output{font-family:var(--mono);font-weight:600;text-align:right}
+input[type=range]{width:100%;accent-color:var(--sign);height:28px}
+@media (max-width:560px){.sl{grid-template-columns:1fr 70px}.sl label{grid-column:1/-1}}
+
+/* ---------- 1: departure board ---------- */
+.board-t{width:100%;border-collapse:separate;border-spacing:0 4px;font-family:var(--mono);font-size:14px}
+.board-t th{font-family:var(--cond);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--sign);text-align:left;padding:4px 10px}
+.board-t td{background:#070C15;padding:9px 10px;color:#F4F1E8;white-space:nowrap}
+.board-t td:first-child{border-radius:6px 0 0 6px}.board-t td:last-child{border-radius:0 6px 6px 0}
+.board-t td.num{text-align:right}
+.status{font-weight:600;padding:2px 8px;border-radius:3px;font-size:12px;letter-spacing:.06em}
+.status.loss{background:var(--bad);color:#fff}.status.profit{background:var(--good);color:#06120C}.status.na{color:var(--muted);border:1px solid var(--line2)}
+.board-t tr.hl td{box-shadow:inset 0 0 0 1px var(--sign)}
+.board-wrap{overflow-x:auto;max-width:100%}
+@media (max-width:640px){.board-t th:nth-child(2),.board-t td:nth-child(2),.board-t th:nth-child(5),.board-t td:nth-child(5){display:none}.board-t{font-size:13px}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.tile .big{font-family:var(--mono);font-weight:600;font-size:32px;line-height:1.1}
+.tile .cap{font-size:14px;color:var(--ink2);margin-top:6px}
+.tile .tag{font-family:var(--cond);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- 2: fuel ---------- */
+.fbar{margin:14px 0}
+.fbar .top{display:flex;justify-content:space-between;font-size:14px;color:var(--ink2);margin-bottom:6px}
+.fbar .bg{height:22px;background:var(--panel2);border-radius:4px;position:relative;overflow:hidden}
+.fbar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;transition:width .35s}
+.fbar .hit{position:absolute;top:0;bottom:0;border-radius:0 4px 4px 0;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 3px,transparent 3px 7px);transition:all .35s}
+.fleet{display:grid;grid-template-columns:repeat(15,1fr);gap:6px;margin-top:12px}
+.fleet .ac{aspect-ratio:1;display:grid;place-items:center;border-radius:4px;cursor:pointer;border:0;padding:0;background:transparent}
+.fleet .ac svg{width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink2);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:2px;display:inline-block}
+
+/* ---------- 3: runway lights ---------- */
+#lights{display:grid;grid-template-columns:repeat(44,1fr);gap:3px;padding:16px;background:#060A12;border-radius:10px}
+#lights i{aspect-ratio:1;border-radius:50%;background:#2a2410;transition:background .4s,box-shadow .4s}
+#lights i.on{background:#F7D774;box-shadow:0 0 6px rgba(247,215,116,.75)}
+@media (max-width:560px){#lights{grid-template-columns:repeat(28,1fr)}}
+.stagecount{font-family:var(--mono);font-size:44px;font-weight:600;color:#F7D774}
+.tombs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.tomb{border:1px solid var(--line2);border-radius:60px 60px 8px 8px;padding:16px 14px 12px;text-align:center;background:var(--panel)}
+.tomb b{font-family:var(--cond);font-size:19px;display:block}
+.tomb small{color:var(--muted);display:block;font-size:13px}
+
+/* ---------- 4: altimeter ---------- */
+.climb{display:grid;grid-template-columns:1fr 150px;gap:18px;align-items:stretch}
+@media (max-width:700px){.climb{grid-template-columns:1fr}}
+#alti{position:relative;background:#060A12;border-radius:10px;overflow:hidden;min-height:300px;border:1px solid var(--line)}
+#alti .tape{position:absolute;left:0;right:0;top:0;bottom:0}
+#alti .ptr{position:absolute;left:0;right:0;height:38px;display:flex;align-items:center;justify-content:center;background:var(--sign);color:var(--signink);font-family:var(--mono);font-weight:600;font-size:15px;transition:top .35s;clip-path:polygon(10px 0,100% 0,100% 100%,10px 100%,0 50%)}
+.out3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+@media (max-width:560px){.out3{grid-template-columns:1fr}}
+.hb{display:grid;grid-template-columns:70px 1fr 50px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.hb .b{height:14px;background:var(--d2);border-radius:0 4px 4px 0}
+
+/* ---------- 5: overhead panel ---------- */
+.overhead{background:linear-gradient(#1a1f27,#12161d);border:1px solid #2c333f;border-radius:14px;padding:18px;position:relative}
+.overhead::before,.overhead::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#3b4350;top:8px}
+.overhead::before{left:8px}.overhead::after{right:8px}
+.annos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.anno{border:1px solid #000;border-radius:6px;background:#0b0e13;padding:10px 8px;text-align:center;cursor:pointer;min-height:76px;display:flex;flex-direction:column;justify-content:center;gap:4px;transition:opacity .25s}
+.anno .lt{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;line-height:1.15}
+.anno .st{font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+.anno.on .lt{color:var(--anno);text-shadow:0 0 8px rgba(57,217,138,.6)}.anno.on .st{color:var(--anno)}
+.anno.off{background:var(--annoOff)}.anno.off .lt{color:#F2B43A}.anno.off .st{color:#C79A3E}
+.anno[aria-pressed="true"]{outline:2px solid var(--sign);outline-offset:2px}
+.anno.dim{opacity:.18}
+#annoDetail{margin-top:14px;min-height:96px}
+
+/* ---------- 6: flight levels ---------- */
+.fl{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:860px){.fl{grid-template-columns:1fr}}
+#ladder{position:relative;height:360px;background:#060A12;border-radius:10px;border:1px solid var(--line)}
+#ladder .tick{position:absolute;left:0;right:0;border-top:1px dashed #1b2a40;font-family:var(--mono);font-size:11px;color:var(--muted);padding-left:6px}
+#ladder .mk{position:absolute;left:62px;right:12px;display:flex;align-items:center;gap:10px;transform:translateY(-50%);cursor:pointer;background:transparent;border:0;padding:4px 0;text-align:left}
+#ladder .mk .dot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #060A12}
+#ladder .mk .ln{flex:1;border-top:2px solid}
+#ladder .mk .lb{font-family:var(--mono);font-size:13px;white-space:nowrap;background:#060A12;padding:0 4px}
+#ladder .mk[aria-pressed="true"] .lb{color:var(--sign)}
+.calc .bigout{font-family:var(--mono);font-size:40px;font-weight:600;color:var(--sign)}
+
+/* ---------- 7: strips + scoring ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line2);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;color:var(--ink2)}
+.chip[aria-pressed="true"]{border-color:var(--sign);color:var(--ink);background:var(--panel2)}
+.chip[aria-pressed="true"]::before{content:"✓ ";color:var(--sign)}
+.rank{margin-top:14px}
+.rk{display:grid;grid-template-columns:28px 230px 1fr 48px;gap:10px;align-items:center;padding:6px 0;transition:transform .3s}
+.rk .n{font-family:var(--mono);color:var(--muted)}
+.rk .bar{height:12px;border-radius:0 4px 4px 0;background:var(--line2);transition:width .4s}
+.rk.pick .bar{background:var(--sign)}
+.rk .s{font-family:var(--mono);text-align:right}
+@media (max-width:640px){.rk{grid-template-columns:24px 1fr 48px;row-gap:4px}.rk>div{grid-column:2/4;grid-row:2}.rk .s{grid-column:3;grid-row:1}}
+.strip{background:var(--strip);color:var(--stripink);border-radius:4px;margin:12px 0;display:grid;grid-template-columns:120px 1fr 150px;border-left:10px solid var(--d1);cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.strip[data-k="2"]{border-left-color:var(--d2)}.strip[data-k="3"]{border-left-color:var(--d3)}
+.strip>div{padding:12px 14px;border-right:1px solid var(--stripline)}
+.strip>div:last-child{border-right:0}
+.strip .cs{font-family:var(--mono);font-weight:600;font-size:18px}
+.strip .lv{font-family:var(--cond);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6B6553}
+.strip .tt{font-family:var(--cond);font-weight:700;font-size:22px;line-height:1.1}
+.strip .more{grid-column:1/-1;border-top:1px solid var(--stripline);padding:14px;display:none;font-size:15px}
+.strip[aria-expanded="true"] .more{display:block}
+.weeks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.weeks div{background:#E2D7B8;border-radius:4px;padding:8px;font-size:13px}
+.weeks b{font-family:var(--mono);font-size:11px;display:block;color:#6B6553}
+@media (max-width:640px){.strip{grid-template-columns:1fr}.strip>div{border-right:0;border-bottom:1px solid var(--stripline)}.weeks{grid-template-columns:1fr}}
+
+/* ---------- 8: arrival ---------- */
+.qs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative}
+.q .no{font-family:var(--mono);color:var(--sign);font-size:12px;letter-spacing:.1em}
+.blackbox{margin-top:30px;background:#E8601C;color:#140800;border-radius:12px;padding:4px}
+.blackbox summary{cursor:pointer;padding:14px 16px;font-family:var(--cond);font-weight:700;font-size:20px;letter-spacing:.06em;text-transform:uppercase}
+.blackbox .in{background:#0A0F18;color:var(--ink);border-radius:9px;padding:16px;font-size:14px}
+.blackbox ol{padding-left:20px;margin:0}
+.blackbox li{margin:6px 0}
+footer{padding:40px 0 60px;color:var(--muted);font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tablebtn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px;padding:0}
+table.plain{border-collapse:collapse;font-size:13px;margin-top:8px}
+table.plain td,table.plain th{border-bottom:1px solid var(--line);padding:4px 10px;text-align:left}
+</style>
+</head>
+<body>
+
+<nav id="fpl" aria-label="Flight progress">
+  <div class="wrap">
+    <span class="code">SDW ✈ BLR</span>
+    <div id="track" aria-hidden="false"><div class="rail"></div><div class="done"></div>
+      <svg id="plane" viewBox="0 0 24 24" aria-hidden="true"><path fill="#F2C230" d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V8.5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z" transform="rotate(90 12 12)"/></svg>
+    </div>
+    <span id="phase">Boarding</span>
+  </div>
+</nav>
+
+<div id="pop" role="dialog" aria-live="polite"></div>
+
+<!-- ================= 0. BOARDING ================= -->
+<header class="hero wrap" id="p0" data-phase="Boarding">
+  <div class="kicker">A data-driven flight plan · November 2026</div>
+  <div class="flap" id="flap" aria-label="The Turboprop Dividend"></div>
+  <p class="lede">In 2026, flying got expensive and the big jets started losing money. That makes it the best moment in a decade to be a small, fuel-light airline, <em>if</em> it can find and keep its customers digitally. This page is built to be explored: move the sliders, flip the switches and question the numbers. Every figure carries a grade you can tap.</p>
+
+  <div class="bp" role="group" aria-label="Boarding pass">
+    <div class="main">
+      <div class="row">
+        <div><div class="lbl">Prepared for</div><div class="val">M. CHACKO</div></div>
+        <div><div class="lbl">Flight</div><div class="val">5 / 95</div></div>
+        <div><div class="lbl">Class</div><div class="val">GOOD → GREAT</div></div>
+      </div>
+      <div class="route">
+        <div><div class="iata">SDW</div><div class="city">Sindhudurg</div></div>
+        <div class="arrow"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1E2330" d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V8.5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z" transform="rotate(90 12 12)"/></svg></div>
+        <div style="text-align:right"><div class="iata">BLR</div><div class="city">Bengaluru</div></div>
+      </div>
+      <div class="row">
+        <div><div class="lbl">Seat</div><div class="val">DIGITAL ENTREPRENEUR</div></div>
+        <div><div class="lbl">Gate</div><div class="val">FY27</div></div>
+        <div><div class="lbl">Aircraft</div><div class="val">ATR 72-600</div></div>
+      </div>
+      <button class="board" id="boardBtn">Board ↓</button>
+    </div>
+    <div class="stub">
+      <div><div class="lbl">Where we first met</div><div class="val" style="font-size:13px">On a FLY91 ATR, Sindhudurg → Bengaluru</div></div>
+      <svg viewBox="0 0 170 46" width="100%" height="46" aria-hidden="true" id="barcode"></svg>
+      <div class="lbl">8 legs · ~10 min</div>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================= 1. WEATHER ================= -->
+<section class="leg" id="p1" data-phase="WX briefing">
+<div class="wrap">
+  <span class="sign"><b>1</b><i>Weather briefing</i></span>
+  <h2>The big jets flew into a storm</h2>
+  <p class="intro">India's largest airline has lost money in four of its last five quarters, while its market share keeps <em>rising</em>. Look at which quarters went red, then strip out currency effects and see what remains.</p>
+
+  <div class="ctlrow">
+    <div class="seg" role="group" aria-label="Board view">
+      <button aria-pressed="true" data-fx="rep">As reported</button>
+      <button aria-pressed="false" data-fx="exfx">Strip out forex</button>
+    </div>
+    <span class="muted" style="font-size:14px">IndiGo (InterGlobe Aviation), consolidated net result, ₹ crore</span>
+  </div>
+  <div class="board-wrap">
+  <table class="board-t" id="board">
+    <thead><tr><th>Quarter</th><th>Period</th><th style="text-align:right">Net ₹ cr</th><th>Status</th><th>Remarks</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+  <p class="note" id="fxNote">Sources: company results via Business Standard, Business Today, Upstox, IIFL. <button class="g" data-s="indigo">A</button></p>
+
+  <div class="space"></div>
+  <div class="grid4">
+    <div class="tile"><div class="tag">IndiGo yield, Q2 FY27</div><div class="big" data-count="34.3" data-fmt="+%">+34.3%</div><div class="cap">Fares per km, year on year <button class="g" data-s="q2">B</button></div></div>
+    <div class="tile"><div class="tag">Domestic flyers, Sep 2026</div><div class="big" data-count="-6.5" data-fmt="%">−6.5%</div><div class="cap">Year on year. Jan–Sep is down 0.8% <button class="g" data-s="dgca">A</button></div></div>
+    <div class="tile"><div class="tag">Industry loss, FY27</div><div class="big">₹36–38k cr</div><div class="cap">ICRA forecast; sector outlook negative <button class="g" data-s="icra">A</button></div></div>
+    <div class="tile"><div class="tag">IndiGo share, Sep 2026</div><div class="big" data-count="65.4" data-fmt="%">65.4%</div><div class="cap">Still rising. This is not a weakening leader <button class="g" data-s="dgca">A</button></div></div>
+  </div>
+  <div class="take">The storm is cost, not competition: fuel up 67% (ATF +46%), with a weak rupee on top. The leader is passing it on as higher fares and flat capacity, and the most price-sensitive flyers, often regional and first-time, are the ones being priced out.</div>
+</div>
+</section>
+
+<!-- ================= 2. AIRCRAFT ================= -->
+<section class="leg" id="p2" data-phase="Aircraft">
+<div class="wrap">
+  <span class="sign"><b>2</b><i>Aircraft selection</i></span>
+  <h2>The turboprop dividend</h2>
+  <p class="intro">Fuel is a far smaller slice of a turboprop's economics. Drag the fuel shock and watch how much of each model's revenue it eats.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Fuel shock simulator</h3>
+      <div class="sl"><label for="fuelSl">Fuel price rise</label><input type="range" id="fuelSl" min="0" max="80" step="1" value="46"><output id="fuelOut">+46%</output></div>
+      <div class="fbar"><div class="top"><span>Turboprop (ATR): fuel ≈ <b>21%</b> of revenue <button class="g" data-s="chacko">B</button></span><span class="mono" id="hitT"></span></div><div class="bg"><div class="fill" id="fT" style="background:var(--d1)"></div><div class="hit" id="hT"></div></div></div>
+      <div class="fbar"><div class="top"><span>Jet operator: fuel ≈ <b>39%</b> of revenue <button class="g" data-s="chacko">B</button></span><span class="mono" id="hitJ"></span></div><div class="bg"><div class="fill" id="fJ" style="background:var(--d2)"></div><div class="hit" id="hJ"></div></div></div>
+      <div class="legend"><span><i class="sw" style="background:var(--d1)"></i>Turboprop</span><span><i class="sw" style="background:var(--d2)"></i>Jet</span><span><i class="sw" style="background:repeating-linear-gradient(135deg,#ddd 0 3px,transparent 3px 7px)"></i>Extra cost from the shock</span></div>
+      <p class="note">Hatched area = fuel share × price rise, in points of revenue, before any fare change. The 20–22% vs 38–40% ratios are FLY91's own claim. IndiGo's Q2 FY27 numbers imply ~42% for a jet operator, which is consistent <button class="g" data-s="derived">D</button>. +46% is ICRA's year-on-year ATF rise <button class="g" data-s="icra">B</button>.</p>
+    </div>
+    <div class="card">
+      <h3>From 6 to ~60 aircraft</h3>
+      <p style="margin:0;color:var(--ink2);font-size:15px">On 3 Sep 2026 FLY91 placed a firm order for 40 ATR 72-600s, about $1bn at list prices, ATR's largest firm order in nearly a decade <button class="g" data-s="atr">A</button>. Tap a plane.</p>
+      <div class="fleet" id="fleet"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--d1)"></i>Flying today (6)</span>
+        <span><i class="sw" style="border:1px dashed var(--d1)"></i>Bridge leases (6–8)</span>
+        <span><i class="sw" style="border:2px solid var(--ink2)"></i>Firm order (40)</span>
+        <span><i class="sw" style="background:var(--line)"></i>Rest of ~60 target</span>
+      </div>
+      <p class="note" id="fleetNote">ATR's own forecast says India needs ~210 new turboprops by 2044. This one order is ~19% of it <button class="g" data-s="atrwp">B</button>.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= 3. NOTAM ================= -->
+<section class="leg" id="p3" data-phase="NOTAMs">
+<div class="wrap">
+  <span class="sign mand"><b>3</b><i>NOTAM · Hazards</i></span>
+  <h2>Regional aviation has a graveyard</h2>
+  <p class="intro">Each light is one route awarded under UDAN, the government's regional connectivity scheme. Step through what happened to them.</p>
+  <div class="ctlrow">
+    <div class="seg" role="group" aria-label="UDAN route stage" id="stageSeg">
+      <button aria-pressed="true" data-n="924">Awarded</button>
+      <button aria-pressed="false" data-n="679">Started</button>
+      <button aria-pressed="false" data-n="514">Survived subsidy term</button>
+      <button aria-pressed="false" data-n="348">Flying today</button>
+    </div>
+  </div>
+  <div class="grid2 g21">
+    <div id="lights" role="img" aria-label="Runway-light grid of UDAN routes"></div>
+    <div class="card">
+      <div class="stagecount" id="stageN">924</div>
+      <div id="stageTxt" style="color:var(--ink2)"></div>
+      <p class="note">Awarded ≈ 923–925 <button class="g" data-s="udanaw">B</button>; started 679 and flying 348 as of Jul 2026 <button class="g" data-s="udan">A</button>; 165 stopped before the 3-year subsidy ended <button class="g" data-s="udanrs">B</button>.</p>
+    </div>
+  </div>
+  <div class="space"></div>
+  <h3>Airline obituaries</h3>
+  <p class="muted" style="margin:0;font-size:15px">More than 20 Indian airlines have shut down since 1994 <button class="g" data-s="shut">A</button>. Among the regional ones, the causes rhyme:</p>
+  <div class="tombs">
+    <div class="tomb"><b>Air Pegasus</b><small>Shut within about a year</small><small>Lease defaults to its lessor</small></div>
+    <div class="tomb"><b>Air Costa</b><small>2013 – 2017</small><small>"Failed to induct aircraft" fast enough</small></div>
+    <div class="tomb"><b>Air Odisha</b><small>Shut 2020</small><small>UDAN licences cancelled: flights below 70% regularity</small></div>
+    <div class="tomb"><b>Deccan Charters · Zexus</b><small>Shut 2020</small><small>Sub-scale regional operations</small></div>
+  </div>
+  <p class="note">Business Today, "Runway to Nowhere"; government data in Parliament <button class="g" data-s="graves">B</button></p>
+  <div class="take">Regional airlines die of three things: scale, lessors and distribution. The 40-aircraft order answers scale. <strong>Distribution is the job this role exists to do.</strong></div>
+</div>
+</section>
+
+<!-- ================= 4. CLIMB ================= -->
+<section class="leg" id="p4" data-phase="Climb">
+<div class="wrap">
+  <span class="sign"><b>4</b><i>Climb</i></span>
+  <h2>The 10× problem</h2>
+  <p class="intro">Ten times the aircraft means roughly ten times the customers, in a country where the average person takes one flight a decade. Set the fleet and see how many people FLY91 must find.</p>
+  <div class="climb">
+    <div class="card">
+      <div class="sl"><label for="fleetSl">Fleet</label><input type="range" id="fleetSl" min="6" max="60" step="1" value="6"><output id="fleetOut">6</output></div>
+      <div class="sl"><label for="lfSl">Load factor</label><input type="range" id="lfSl" min="60" max="85" step="1" value="75"><output id="lfOut">75%</output></div>
+      <div class="sl"><label for="tripSl">Trips / customer / yr</label><input type="range" id="tripSl" min="1" max="6" step="0.5" value="2"><output id="tripOut">2</output></div>
+      <div class="out3">
+        <div class="tile"><div class="tag">Passengers / year</div><div class="big" id="oPax">0.97M</div></div>
+        <div class="tile"><div class="tag">Distinct customers</div><div class="big" id="oCust">0.48M</div></div>
+        <div class="tile"><div class="tag">Share of India's 2025 flyers</div><div class="big" id="oShare">0.6%</div></div>
+      </div>
+      <p class="note">Assumes today's utilisation carries over (354 weekly flights ÷ 6 aircraft ≈ 59 per aircraft per week) and 70 seats, against 16.69 cr domestic passengers in 2025 <button class="g" data-s="derived">D</button>. An illustration, not FLY91's plan.</p>
+    </div>
+    <div id="alti" aria-hidden="true"><div class="tape" id="tape"></div><div class="ptr" id="ptr">0.97M</div></div>
+  </div>
+  <div class="space"></div>
+  <div class="card">
+    <h3>Air trips per person per year <button class="g" data-s="aci">B</button></h3>
+    <div class="hb"><span>India</span><div class="b" style="width:4.8%"></div><span class="mono">0.1</span></div>
+    <div class="hb"><span>China</span><div class="b" style="width:23.8%"></div><span class="mono">0.5</span></div>
+    <div class="hb"><span>USA</span><div class="b" style="width:100%"></div><span class="mono">2.1</span></div>
+    <p class="note">ACI, 2023. Most of FLY91's future customers have barely flown, so the first flight has to be easy, cheap to sell, and in their language.</p>
+  </div>
+</div>
+</section>
+
+<!-- ================= 5. OVERHEAD ================= -->
+<section class="leg" id="p5" data-phase="Overhead panel">
+<div class="wrap">
+  <span class="sign"><b>5</b><i>Overhead panel</i></span>
+  <h2>What FLY91 has already switched on</h2>
+  <p class="intro">Green lights are products and choices FLY91 has launched. Amber lights are what IndiGo and peers sell that we haven't seen at FLY91. Press any light.</p>
+  <div class="ctlrow"><div class="seg" role="group" aria-label="Filter panel" id="annoSeg">
+    <button aria-pressed="true" data-f="all">All</button><button aria-pressed="false" data-f="on">Switched on</button><button aria-pressed="false" data-f="off">Gaps</button>
+  </div></div>
+  <div class="overhead"><div class="annos" id="annos"></div></div>
+  <div class="card" id="annoDetail" aria-live="polite"><span class="muted">Press a light to read what it is, when it launched, and the source.</span></div>
+  <div class="take">The transactional extras are covered, and covered smartly. What's missing is everything that makes a customer come back: <strong>loyalty, a card partner, and commerce around the trip.</strong></div>
+</div>
+</section>
+
+<!-- ================= 6. CRUISE ================= -->
+<section class="leg" id="p6" data-phase="Cruise">
+<div class="wrap">
+  <span class="sign"><b>6</b><i>Cruise altitude</i></span>
+  <h2>The headroom is in the extras</h2>
+  <p class="intro">Ancillary revenue is everything an airline earns beyond the seat itself. Read these as flight levels: share of revenue × 10. Press a level to see why it sits there.</p>
+  <div class="fl">
+    <div>
+      <div id="ladder"></div>
+      <div class="card" id="flDetail" style="margin-top:12px;min-height:110px" aria-live="polite"></div>
+    </div>
+    <div class="card calc">
+      <h3>What a rupee per passenger is worth</h3>
+      <p style="margin:0 0 6px;color:var(--ink2);font-size:15px">Uses the passengers from your fleet setting in leg 4.</p>
+      <div class="sl"><label for="ancSl">Extra ₹ / passenger</label><input type="range" id="ancSl" min="0" max="1000" step="25" value="100"><output id="ancOut">₹100</output></div>
+      <div class="bigout" id="ancRes">₹9.7 cr</div>
+      <div class="muted" id="ancSub">per year, at 0.97M passengers</div>
+      <div class="ctlrow">
+        <span class="muted" style="font-size:14px">Jump to:</span>
+        <div class="seg" role="group" aria-label="Benchmarks" id="ancSeg">
+          <button aria-pressed="false" data-v="100">₹100</button><button aria-pressed="false" data-v="300">₹300</button><button aria-pressed="false" data-v="900">IndiGo ≈ ₹900</button>
+        </div>
+      </div>
+      <p class="note">IndiGo earns ~₹900 of ancillary per passenger, ~10.6% of revenue (Q2 FY27) <button class="g" data-s="derived">D</button>. Illustrative. FLY91's actual ancillary figures aren't public.</p>
+    </div>
+  </div>
+  <div class="take">Not by nickel-and-diming first-time flyers. The headroom is <strong>commerce that makes the trip possible</strong> (permits, stays, the drive from a small airport), <strong>flexibility</strong>, and <strong>a reason to come back</strong>.</div>
+</div>
+</section>
+
+<!-- ================= 7. FLIGHT PLAN ================= -->
+<section class="leg" id="p7" data-phase="Flight plan">
+<div class="wrap">
+  <span class="sign"><b>7</b><i>Flight plan · 90 days</i></span>
+  <h2>Three experiments, 95% execution</h2>
+  <p class="intro">We scored nine ideas against six tests. Untick the tests you don't care about and the ranking re-flies itself. The three picks hold up under most weightings.</p>
+  <div class="chips" id="chips"></div>
+  <div class="rank" id="rank"></div>
+  <p class="note">Score per test: 2 = yes, 1 = partly, 0 = no. Our judgement, shown so you can disagree.</p>
+  <div class="space"></div>
+  <h3>The flight strips <span class="muted" style="font-family:var(--body);font-size:15px;font-weight:400">· tap one to open</span></h3>
+  <div id="strips"></div>
+  <p class="note">FLY91 already does part of experiments 1 and 2, so the point is to scale what works and make it measurable. Starting figures and targets are left blank until there's FLY91 data to set them from.</p>
+</div>
+</section>
+
+<!-- ================= 8. ARRIVAL ================= -->
+<section class="leg" id="p8" data-phase="Arrival">
+<div class="wrap">
+  <span class="sign"><b>8</b><i>Arrival</i></span>
+  <h2>Requesting information</h2>
+  <p class="intro">Public data runs out here. These are the numbers that would turn the three experiments from hypotheses into plans, and the conversation I'd most like to have.</p>
+  <div class="qs">
+    <div class="q"><div class="no">REQ 01</div>What share of bookings come direct (web, app, WhatsApp) vs OTAs and agents?</div>
+    <div class="q"><div class="no">REQ 02</div>Ancillary revenue per passenger, and attach rates for SmartBag91 and Smart Ticket?</div>
+    <div class="q"><div class="no">REQ 03</div>What share are first-time flyers, how often do they come back, and what does acquiring one cost by city?</div>
+    <div class="q"><div class="no">REQ 04</div>How far apart are load factors across routes: UDAN vs others, islands vs metros?</div>
+    <div class="q"><div class="no">REQ 05</div>Is there corporate or SME demand for a prepaid, flexible pass?</div>
+    <div class="q"><div class="no">REQ 06</div>What does "a truly differentiated digital e-commerce business" mean to you: airline retail, a travel marketplace, or beyond travel?</div>
+  </div>
+
+  <details class="blackbox">
+    <summary>▸ Flight data recorder · method &amp; sources</summary>
+    <div class="in">
+      <p style="margin-top:0">Every figure carries a grade. <b>A</b>: official or company-reported, consistent across outlets. <b>B</b>: one reputable report, or a company claim. <b>D</b>: our own arithmetic on A/B inputs, reproducible with <span class="mono">research/derived_numbers.py</span>. The full dossier, with every link, conflict and gap, is in this site's repository under <span class="mono">research/dossier.md</span>.</p>
+      <ol id="srcList"></ol>
+    </div>
+  </details>
+</div>
+</section>
+</main>
+
+<footer class="wrap">
+  Prepared by a fellow passenger on SDW → BLR, from public sources as of 1–10 November 2026. Not affiliated with or endorsed by FLY91. Figures about FLY91's internal economics are illustrations, not claims.
+</footer>
+
+<script>
+(()=>{
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- sources ---------- */
+const S={
+ indigo:["IndiGo quarterly results","Company results as reported by Business Standard, Business Today, Upstox and IIFL (Q1 FY26 – Q2 FY27).","https://www.business-standard.com/companies/quarterly-results/aviation-major-indigo-posts-1-879-1-crore-loss-in-september-quarter-126102901045_1.html"],
+ q2:["IndiGo Q2 FY27 operating metrics","Yield ₹6.30 (+34.3%), fuel cost +67.2%, ex-forex loss ₹723.7 cr. Reports of the 29 Oct 2026 investor presentation.","https://www.traveltrendstoday.in/indigo-records-net-loss-of-inr-1879-cr-in-q2-fy27-despite-26-revenue-growth"],
+ dgca:["DGCA domestic traffic, Sep 2026","118.23 lakh passengers, −6.49% YoY; Jan–Sep −0.82%; IndiGo 65.4%.","https://www.businesstoday.in/latest/corporate/story/domestic-air-traffic-drops-6-5-in-september-year-to-date-passenger-numbers-turn-negative-564093-2026-10-27"],
+ icra:["ICRA aviation outlook","FY27 industry net loss ₹36,000–38,000 cr; outlook negative; ATF +46.2% YoY.","https://www.icra.in/Research/ViewResearchReport/domestic-air-passenger-traffic-to-grow-by-a-modest-3-6-in-fy2027-industry-net-loss-projected-at-rs-360-380-billion/7079"],
+ chacko:["Manoj Chacko, Mint interview (Jul/Aug 2026)","\"ATR operations allow us to maintain a fuel-to-revenue ratio of 20–22%, compared with 38–40% for operators using jet aircraft.\" Company claim.","https://www.pressreader.com/india/mint-delhi/20260805/281870125246753"],
+ derived:["Our arithmetic","Calculated from graded inputs; formulas in research/derived_numbers.py and dossier §7. E.g. IndiGo fuel CASK ₹2.44 ÷ RASK ₹5.76 ≈ 42%.","https://github.com/nareshbharadwaj/fly91-thesis/blob/main/research/derived_numbers.py"],
+ atr:["ATR press release, 3 Sep 2026","FLY91 firm order for 40 ATR 72-600s; deliveries 2027–2032.","https://www.atr-aircraft.com/presspost/fly91-places-historic-order-for-40-atr-72-600-aircraft/"],
+ lease:["Bridge leases","6–8 leased ATRs taking the fleet to 12–14 by late 2027 (PTI); ~60 aircraft long term.","https://www.outlookbusiness.com/news/fly91-goes-big-on-india-1-billion-atr-order-to-build-60-plane-fleet"],
+ atrwp:["ATR India White Paper, Jan 2026","~210 new turboprops by 2044; 400+ viable routes. Manufacturer forecast.","https://www.atr-aircraft.com/wp-content/uploads/2026/01/2026.01.28-Indian-White-Paper-EN.pdf"],
+ udan:["PIB, Modified UDAN, 17 Jul 2026","679 routes operationalised; 1.68 cr passengers; 165 operational airports.","https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/jul/doc2026717924201.pdf"],
+ udanaw:["UDAN routes awarded","923 awarded to Oct 2025 (Rajya Sabha); 925 by Feb 2026.","https://networkthoughts.com/2025/12/08/only-71-of-all-awarded-routes-started-operations-in-udan-19-did-not-last-full-three-years/"],
+ udanrs:["Rajya Sabha reply, 27 Jul 2026","165 routes discontinued before the 3-year VGF tenure; 348 currently operational.","https://www.dailyexcelsior.com/?p=1923657"],
+ shut:["Airline closures","Over 20 airlines shut since 1994; 7 in five years to July 2023 (government data).","https://www.outlookbusiness.com/news/seven-airlines-closed-down-in-five-years-16-carriers-operational-now-govt-data-news-306326"],
+ graves:["Regional airline failures","Business Today, \"Runway to Nowhere\" (2017); government closure data.","https://www.businesstoday.in/magazine/features/story/runway-to-nowhere-79267-2017-05-01"],
+ aci:["ACI air trips per capita","India ~0.1, China ~0.5, USA ~2.1 trips per person per year (2023).","https://www.deccanherald.com/business/india-set-to-surpass-china-in-air-passenger-traffic-growth-rate-in-2026-airports-international-council-3497128"],
+ ideaworks:["IdeaWorks ancillary data","Global 14.9% of revenue (2024); Frontier 60.2%, Spirit 59.8% (2025).","https://ideaworkscompany.com/2026-seatmaps-com-yearbook-of-ancillary-revenue-by-ideaworkscompany-report/"],
+ ryanair:["Ryanair FY26","Ancillary €4.99bn, ~€24 per passenger, on €15.54bn revenue.","https://www.travelextra.ie/ryanair-reprots-profit-rise-of-40pc/"],
+ fly91pr:["FLY91 press releases","Product launches and dates.","https://fly91.in/press-releases"],
+ nocall:["No call centre","CTO Prasanna Subramaniam: a conscious choice to be a 'digital native airline'. DT Next, Oct 2024.","https://www.dtnext.in/news/business/a-regional-airline-without-call-centre-fly91-remains-digital-native-807309"],
+ indigoar:["IndiGo FY26 annual report","Ancillary = cargo, excess baggage, convenience fees, ticket changes, special service requests, in-flight sales. ₹9,092 cr.","https://nsearchives.nseindia.com/corporate/Indigo1_28072026215606_Notice_of_23rd_AGM_and_Annual_Report.pdf"],
+ mmt:["MakeMyTrip × FLY91","Lakshadweep packages around a Bengaluru–Agatti flight from 12 Nov 2026, sold on MMT and fly91.in.","https://fly91.in/press-releases/makemytrip-partners-with-fly91-to-launch-exclusive-direct-holiday-packages-to-lakshadweep-from-bengaluru"],
+ upi:["UPI, Sep 2026","24.07 bn transactions worth ₹29.37 lakh cr (NPCI).","https://www.outlookmoney.com/banking/upi-processes-2407-billion-transactions-worth-rs-2937-lakh-crore-in-september"]
+};
+const grade={indigo:"A",q2:"B",dgca:"A",icra:"A",chacko:"B",derived:"D",atr:"A",lease:"B",atrwp:"B",udan:"A",udanaw:"B",udanrs:"B",shut:"A",graves:"B",aci:"B",ideaworks:"B",ryanair:"A",fly91pr:"B",nocall:"B",indigoar:"A",mmt:"B",upi:"A"};
+const pop=$('#pop');
+function showPop(btn,key){
+  const s=S[key]; if(!s) return;
+  pop.innerHTML=`<div class="t">GRADE ${grade[key]||btn.textContent} · ${s[0].toUpperCase()}</div><div>${s[1]}</div><div style="margin-top:6px"><a href="${s[2]}" target="_blank" rel="noopener">Open source ↗</a></div>`;
+  pop.style.display='block';
+  const r=btn.getBoundingClientRect(), w=Math.min(320,innerWidth-32);
+  pop.style.width=w+'px';
+  pop.style.left=Math.max(16,Math.min(r.left+scrollX-20,scrollX+innerWidth-w-16))+'px';
+  pop.style.top=(r.bottom+scrollY+8)+'px';
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.g');
+  if(b){e.stopPropagation();showPop(b,b.dataset.s);return;}
+  if(!e.target.closest('#pop')) pop.style.display='none';
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')pop.style.display='none'});
+$('#srcList').innerHTML=Object.entries(S).map(([k,s])=>`<li><b>[${grade[k]}]</b> ${s[0]}: ${s[1]} <a href="${s[2]}" target="_blank" rel="noopener">link</a></li>`).join('');
+
+/* ---------- split-flap headline ---------- */
+const words=["THE","TURBOPROP","DIVIDEND"], CH="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const flap=$('#flap');
+words.forEach(w=>{const d=document.createElement('div');d.className='w';d.setAttribute('aria-hidden','true');
+  [...w].forEach(ch=>{const c=document.createElement('span');c.className='c';c.dataset.t=ch;c.textContent=reduce?ch:CH[Math.floor(Math.random()*36)];d.appendChild(c)});flap.appendChild(d)});
+if(!reduce){$$('.flap .c').forEach((c,i)=>{let n=0,max=8+i*2;const t=setInterval(()=>{n++;c.textContent=n>=max?c.dataset.t:CH[Math.floor(Math.random()*36)];if(n>=max)clearInterval(t)},45)})}
+
+/* barcode */
+(()=>{let x=0,h='';const seed=[2,1,3,1,1,2,4,1,2,1,1,3,2,2,1,1,3,1,2,1,1,2,3,1,1,4,1,2,1,3,1,1,2,2,1,3,1,2,1,1,2,1,3,2,1,1,2,1];
+ seed.forEach((w,i)=>{if(i%2===0)h+=`<rect x="${x}" y="0" width="${w*1.6}" height="46" fill="#1E2330"/>`;x+=w*1.6});$('#barcode').innerHTML=h})();
+$('#boardBtn').onclick=()=>$('#p1').scrollIntoView({behavior:reduce?'auto':'smooth'});
+
+/* ---------- flight progress ---------- */
+const legs=$$('[data-phase]'), track=$('#track');
+legs.forEach((l,i)=>{const b=document.createElement('button');b.className='stop';b.style.left=(i/(legs.length-1)*100)+'%';
+  b.setAttribute('aria-label','Go to '+l.dataset.phase);b.innerHTML=`<span>${l.dataset.phase}</span>`;b.onclick=()=>l.scrollIntoView({behavior:reduce?'auto':'smooth'});track.appendChild(b)});
+const stops=$$('.stop',track);
+function onScroll(){
+  const y=scrollY+innerHeight*0.35; let idx=0;
+  legs.forEach((l,i)=>{if(l.offsetTop<=y)idx=i});
+  const max=document.documentElement.scrollHeight-innerHeight, p=max>0?Math.min(1,scrollY/max):0;
+  $('#plane').style.left=(p*100)+'%'; $('.done',track).style.width=(p*100)+'%';
+  stops.forEach((s,i)=>s.classList.toggle('on',i<=idx)); $('#phase').textContent=legs[idx].dataset.phase;
+}
+addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+/* reveal-once helper */
+const once=(el,fn)=>{const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){fn();io.disconnect()}})},{threshold:.3});io.observe(el)};
+
+/* ---------- 1. departure board ---------- */
+const Q=[
+ {q:"Q1 FY26",p:"Apr–Jun 2025",v:2176,x:null,r:"Before the storm"},
+ {q:"Q2 FY26",p:"Jul–Sep 2025",v:-2582.1,x:103.9,r:"Rupee depreciation"},
+ {q:"Q3 FY26",p:"Oct–Dec 2025",v:549.8,x:null,r:"Dec meltdown + labour codes"},
+ {q:"Q4 FY26",p:"Jan–Mar 2026",v:-2536.9,x:null,r:"Forex, labour laws"},
+ {q:"Q1 FY27",p:"Apr–Jun 2026",v:-238,x:null,r:"Fuel cost +85.7%"},
+ {q:"Q2 FY27",p:"Jul–Sep 2026",v:-1879.1,x:-723.7,r:"Fuel +67.2%, weak rupee"}
+];
+const fmt=v=>(v<0?"−":"+")+Math.abs(v).toLocaleString('en-IN',{minimumFractionDigits:1,maximumFractionDigits:1});
+function flipText(td,txt){
+  if(reduce){td.textContent=txt;return}
+  let n=0;const t=setInterval(()=>{n++;td.textContent=n>6?txt:[...txt].map(c=>/[0-9]/.test(c)?Math.floor(Math.random()*10):c).join('');if(n>6)clearInterval(t)},50);
+}
+let fxMode='rep';
+function drawBoard(anim){
+  const tb=$('#board tbody');tb.innerHTML='';
+  Q.forEach(r=>{
+    const v=fxMode==='rep'?r.v:r.x, tr=document.createElement('tr');
+    if(fxMode==='exfx'&&r.x!==null)tr.className='hl';
+    const st=v===null?'<span class="status na">N/A</span>':v<0?'<span class="status loss">LOSS</span>':'<span class="status profit">PROFIT</span>';
+    tr.innerHTML=`<td>${r.q}</td><td>${r.p}</td><td class="num"></td><td>${st}</td><td>${fxMode==='exfx'&&r.x!==null?(r.x<0?'Loss even without forex':'Profit without forex'):r.r}</td>`;
+    tb.appendChild(tr);const td=$('.num',tr),txt=v===null?'—':fmt(v);anim?flipText(td,txt):td.textContent=txt;
+  });
+  $('#fxNote').innerHTML=fxMode==='rep'
+   ?'Four of the last five quarters were losses; net −₹6,686 cr across the five. Sources: company results via Business Standard, Business Today, Upstox, IIFL. <button class="g" data-s="indigo">A</button>'
+   :'<b>A year ago the loss was currency. Now it\'s fuel.</b> Excluding forex, Q2 FY26 was a ₹103.9 cr profit; Q2 FY27 is a ₹723.7 cr loss. Ex-forex figures are only disclosed for these two quarters. <button class="g" data-s="q2">B</button>';
+}
+drawBoard(false); once($('#board'),()=>drawBoard(true));
+$$('[data-fx]').forEach(b=>b.onclick=()=>{fxMode=b.dataset.fx;$$('[data-fx]').forEach(x=>x.setAttribute('aria-pressed',x===b));drawBoard(true)});
+
+/* tiles count-up */
+$$('[data-count]').forEach(el=>{once(el,()=>{if(reduce)return;const t=+el.dataset.count,f=el.dataset.fmt;let s=0;const st=performance.now();
+ const step=n=>{const k=Math.min(1,(n-st)/900),v=t*k*(2-k);el.textContent=(f==='+%'?'+':'')+(v<0?'−':'')+Math.abs(v).toFixed(1)+'%';if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)})});
+
+/* ---------- 2. fuel simulator ---------- */
+function fuel(){
+  const x=+$('#fuelSl').value/100, sT=.21, sJ=.39, W=.65; // bar scale: 65% of revenue = full width
+  $('#fuelOut').textContent='+'+Math.round(x*100)+'%';
+  const set=(f,h,o,s)=>{$(f).style.width=(s/W*100)+'%';$(h).style.left=(s/W*100)+'%';$(h).style.width=(s*x/W*100)+'%';$(o).textContent='+'+(s*x*100).toFixed(1)+' pts'};
+  set('#fT','#hT','#hitT',sT);set('#fJ','#hJ','#hitJ',sJ);
+}
+$('#fuelSl').oninput=fuel;fuel();
+
+/* fleet grid */
+const plane=(fill,stroke,dash)=>`<svg viewBox="0 0 24 24"><path d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V8.5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z" fill="${fill}" stroke="${stroke}" stroke-width="1.2" ${dash?'stroke-dasharray="2 2"':''}/></svg>`;
+const groups=[
+ {n:6,svg:plane('#C98410','#C98410'),t:"Flying today: 6 ATR 72-600s, 70 seats each.",s:"atr"},
+ {n:8,svg:plane('none','#C98410',1),t:"Bridge leases: 6–8 more ATRs from the open market, taking the fleet to 12–14 by late 2027 (PTI). Another report says 10–12 by Q1 2027.",s:"lease"},
+ {n:40,svg:plane('none','#B4C2D4'),t:"Firm order: 40 ATR 72-600s, deliveries from the second half of 2027 to 2032. About $1bn at list prices.",s:"atr"},
+ {n:6,svg:plane('#24364F','#24364F'),t:"The rest of the ~60-aircraft target: not yet tied to an announced deal.",s:"lease"}
+];
+const fl=$('#fleet');
+groups.forEach((g,gi)=>{for(let i=0;i<g.n;i++){const b=document.createElement('button');b.className='ac';b.innerHTML=g.svg;b.setAttribute('aria-label',g.t);
+  b.onclick=()=>{$('#fleetNote').innerHTML=g.t+` <button class="g" data-s="${g.s}">${grade[g.s]}</button>`};fl.appendChild(b)}});
+
+/* ---------- 3. runway lights ---------- */
+const L=$('#lights'), TOTAL=924;
+for(let i=0;i<TOTAL;i++){const d=document.createElement('i');d.className='on';L.appendChild(d)}
+const lights=$$('#lights i');
+// stable random order so lights go out scattered, like a real failing field
+const order=[...Array(TOTAL).keys()];let sd=7;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280};
+for(let i=order.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+const stageTxt={924:"Routes awarded under UDAN since 2016: every light on.",679:"Actually started: 245 awarded routes never flew. In rounds 1–3, the CAG found 52% never commenced.",514:"Lasted the full 3-year subsidy term: 165 started routes folded early.",348:"Flying today. About 38% of all awarded routes and 51% of those started. Many lasted only as long as the subsidy."};
+function stage(n){
+  lights.forEach((d,i)=>d.classList.remove('on'));
+  order.slice(0,n).forEach(i=>lights[i].classList.add('on'));
+  $('#stageN').textContent=n;$('#stageTxt').textContent=stageTxt[n];
+}
+$$('#stageSeg button').forEach(b=>b.onclick=()=>{$$('#stageSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));stage(+b.dataset.n)});
+stage(924);
+once(L,()=>{if(reduce)return;const seq=[679,514,348];let k=0;const run=()=>{if(k<seq.length){const n=seq[k++];$$('#stageSeg button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.n===n));stage(n);setTimeout(run,1400)}};setTimeout(run,800)});
+
+/* ---------- 4. climb ---------- */
+const state={pax:966420};
+const tape=$('#tape'), TMAX=11e6;
+for(let m=0;m<=11;m++){const t=document.createElement('div');t.style.cssText=`position:absolute;left:0;right:0;border-top:1px solid #1b2a40;font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;padding-right:10px;bottom:${m/11*100}%`;t.textContent=m+'M';tape.appendChild(t)}
+const M=v=>v>=1e6?(v/1e6).toFixed(2)+'M':Math.round(v/1e3)+'k';
+function climb(){
+  const f=+$('#fleetSl').value, lf=+$('#lfSl').value/100, tr=+$('#tripSl').value;
+  $('#fleetOut').textContent=f;$('#lfOut').textContent=Math.round(lf*100)+'%';$('#tripOut').textContent=tr;
+  const pax=f*59*52*70*lf; state.pax=pax;
+  $('#oPax').textContent=M(pax);$('#oCust').textContent=M(pax/tr);$('#oShare').textContent=(pax/1.6946e8*100).toFixed(1)+'%';
+  const h=$('#alti').clientHeight; $('#ptr').style.top=Math.max(0,(1-pax/TMAX)*h-19)+'px'; $('#ptr').textContent=M(pax)+' pax';
+  anc();
+}
+['#fleetSl','#lfSl','#tripSl'].forEach(id=>$(id).oninput=climb);
+
+/* ---------- 5. overhead panel ---------- */
+const A=[
+ {on:1,t:"No check-in",d:"The boarding pass is issued automatically once a booking is paid. No check-in step, no airport ticket offices, a boarding card of about 19 KB.",w:"Since launch, Mar 2024",s:"fly91pr"},
+ {on:1,t:"No call centre",d:"Bot-first support with a callback on request, by design. The savings fund digital products.",w:"Oct 2024",s:"nocall"},
+ {on:1,t:"UPI on board",d:"In-flight purchases paid with UPI, India's rail of 24 bn payments a month.",w:"Date to confirm",s:"upi"},
+ {on:1,t:"Web fee waiver",d:"Convenience fee waived on fly91.in bookings (Sep and Dec 2025): a direct-channel nudge.",w:"Sep 2025",s:"fly91pr"},
+ {on:1,t:"Smart Ticket",d:"Flexibility bundle: ₹1,991 (Oct 2025: unlimited changes, priority, +5 kg) and a ₹599 corporate version (Aug 2026).",w:"Oct 2025 / Aug 2026",s:"fly91pr"},
+ {on:1,t:"SmartBag91",d:"Pre-booked excess baggage in 5–30 kg slabs, ₹1,000–3,000, on fly91.in.",w:"Apr–May 2026",s:"fly91pr"},
+ {on:1,t:"Holidays",d:"Holiday packages on fly91.in, e.g. Lakshadweep from ₹39,990 per person via a partner operator.",w:"Ongoing",s:"fly91pr"},
+ {on:1,t:"MMT packages",d:"Lakshadweep packages with MakeMyTrip around a Bengaluru–Agatti flight from 12 Nov 2026, sold on both MMT and fly91.in.",w:"Aug 2026",s:"mmt"},
+ {on:0,t:"Loyalty",d:"No frequent-flyer programme seen. Loyalty is the largest single ancillary source at many airlines, and the biggest gap here.",w:"Not seen in coverage",s:"ideaworks"},
+ {on:0,t:"Co-brand card",d:"No bank or fintech card partner seen. IndiGo and most large airlines run one.",w:"Not seen in coverage",s:"indigoar"},
+ {on:0,t:"Cargo",d:"IndiGo counts cargo inside ancillary revenue. Island supply runs to Agatti are an obvious fit.",w:"Not seen in coverage",s:"indigoar"},
+ {on:0,t:"Insurance & hotels",d:"Cross-sell around the ticket is a standard ancillary line at peers.",w:"Not seen in coverage",s:"indigoar"},
+ {on:0,t:"Airport transfer",d:"Small airports sit far from town (e.g. Sindhudurg airport to Malvan). Last-mile transport is trip-enabling commerce.",w:"Not seen in coverage",s:"derived"},
+ {on:0,t:"Seats & meals",d:"Paid seats and pre-booked meals sit in IndiGo's 'special service requests'. Low value on a 70-seat ATR, and they risk goodwill.",w:"Not seen in coverage",s:"indigoar"}
+];
+const an=$('#annos');
+A.forEach((a,i)=>{const b=document.createElement('button');b.className='anno '+(a.on?'on':'off');b.setAttribute('aria-pressed','false');b.dataset.on=a.on;
+  b.innerHTML=`<span class="lt">${a.t}</span><span class="st">${a.on?'● ON':'○ GAP'}</span>`;
+  b.onclick=()=>{$$('.anno').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    $('#annoDetail').innerHTML=`<div class="kicker" style="color:${a.on?'var(--anno)':'#F2B43A'}">${a.on?'Switched on':'Gap'} · ${a.w}</div><h3 style="margin-top:6px">${a.t}</h3><div style="color:var(--ink2)">${a.d} <button class="g" data-s="${a.s}">${grade[a.s]}</button></div>${a.on?'':'<p class="note">"Not seen" means not found in public coverage. fly91.in could not be checked directly.</p>'}`};
+  an.appendChild(b)});
+$$('#annoSeg button').forEach(b=>b.onclick=()=>{$$('#annoSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));const f=b.dataset.f;
+  $$('.anno').forEach(x=>x.classList.toggle('dim',f!=='all'&&String(+(f==='on'))!==x.dataset.on))});
+
+/* ---------- 6. flight levels ---------- */
+const FL=[
+ {v:10.6,c:'#C98410',n:"IndiGo",t:"India's leader earns ~10.6% of revenue from ancillaries (Q2 FY27), about ₹900 per passenger. In FY26: ₹9,092 cr from cargo, bags, fees, changes, special services and in-flight sales. Growing slower than fares.",s:"indigoar"},
+ {v:14.9,c:'#16A274',n:"Global average",t:"14.9% of airline revenue worldwide in 2024, up from 9.1% in 2016 ($148.4bn). For full-service airlines, loyalty and co-branded cards are the largest piece.",s:"ideaworks"},
+ {v:32.1,c:'#3D8EF0',n:"Ryanair",t:"About 32% of revenue: ~€24 per passenger on an average fare of ~€50. Europe's benchmark for a low-cost model that profits from extras.",s:"ryanair"},
+ {v:60.2,c:'#E5534B',n:"Frontier (US ULCC)",t:"60.2% in 2025, with Spirit at 59.8%. Partly a labelling effect: the fare is stripped to a bare seat. A high share isn't health either: Spirit filed for bankruptcy again in 2025.",s:"ideaworks"}
+];
+const lad=$('#ladder'), LMAX=65;
+for(let v=0;v<=60;v+=10){const t=document.createElement('div');t.className='tick';t.style.bottom=(v/LMAX*100)+'%';t.textContent='FL'+String(v*10).padStart(3,'0');lad.appendChild(t)}
+FL.forEach((f,i)=>{const b=document.createElement('button');b.className='mk';b.style.bottom='auto';b.style.top=((1-f.v/LMAX)*100)+'%';b.setAttribute('aria-pressed','false');
+  b.innerHTML=`<span class="dot" style="background:${f.c}"></span><span class="ln" style="border-color:${f.c}"></span><span class="lb">FL${Math.round(f.v*10)} · ${f.n} ${f.v}%</span>`;
+  b.onclick=()=>{$$('#ladder .mk').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#flDetail').innerHTML=`<h3>${f.n}: ${f.v}% of revenue</h3><div style="color:var(--ink2)">${f.t} <button class="g" data-s="${f.s}">${grade[f.s]}</button></div>`};
+  lad.appendChild(b)});
+$('#flDetail').innerHTML='<span class="muted">Press a flight level. FLY91\'s own level isn\'t public, and finding it is the first question.</span>';
+function anc(){
+  const r=+$('#ancSl').value; $('#ancOut').textContent='₹'+r;
+  const cr=state.pax*r/1e7; $('#ancRes').textContent='₹'+(cr>=100?Math.round(cr):cr.toFixed(1))+' cr';
+  $('#ancSub').textContent='per year, at '+M(state.pax)+' passengers (leg 4 setting)';
+  $$('#ancSeg button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.v===r));
+}
+$('#ancSl').oninput=anc;
+$$('#ancSeg button').forEach(b=>b.onclick=()=>{$('#ancSl').value=b.dataset.v;anc()});
+climb();
+
+/* ---------- 7. scoring + strips ---------- */
+const T=["Evidence","Shippable in 90 days","Testable vs control","Material impact","Builds on FLY91","Fits the role"];
+const C=[
+ ["WhatsApp + UPI store",[2,2,2,2,2,2],1],["Destination bundles, direct",[2,2,1,2,2,2],1],["FLY91 Pass",[1,2,2,2,2,2],1],
+ ["Fare lock",[2,2,2,1,1,2],0],["First-flyer acquisition",[2,2,1,2,1,2],0],["Airport transfers",[1,2,2,1,0,1],0],
+ ["Loyalty / co-brand card",[2,0,0,2,0,2],0],["Paid seats & meals",[1,2,2,0,1,0],0],["Island cargo",[1,0,0,1,0,0],0]
+];
+const on=T.map(()=>true);
+$('#chips').innerHTML=T.map((t,i)=>`<button class="chip" aria-pressed="true" data-i="${i}">${t}</button>`).join('');
+$$('#chips .chip').forEach(c=>c.onclick=()=>{const i=+c.dataset.i;if(on.filter(Boolean).length===1&&on[i])return;on[i]=!on[i];c.setAttribute('aria-pressed',on[i]);rank()});
+const rk=$('#rank');
+C.forEach(c=>{const d=document.createElement('div');d.className='rk'+(c[2]?' pick':'');d.innerHTML=`<span class="n"></span><span>${c[0]}${c[2]?' <span class="mono" style="color:var(--sign);font-size:11px">PICK</span>':''}</span><div><div class="bar"></div></div><span class="s"></span>`;c.el=d;rk.appendChild(d)});
+function rank(){
+  const max=on.filter(Boolean).length*2;
+  const sc=C.map(c=>({c,s:c[1].reduce((a,v,i)=>a+(on[i]?v:0),0)})).sort((a,b)=>b.s-a.s||C.indexOf(a.c)-C.indexOf(b.c));
+  sc.forEach((o,i)=>{rk.appendChild(o.c.el);$('.n',o.c.el).textContent=String(i+1).padStart(2,'0');$('.bar',o.c.el).style.width=(o.s/max*100)+'%';$('.s',o.c.el).textContent=o.s+'/'+max});
+}
+rank();
+
+const X=[
+ {k:1,cs:"EXP-1 WAPP",lv:"Lever · Revenue / pax",t:"WhatsApp + UPI store after booking",
+  why:"FLY91 already runs service through WhatsApp with no call centre, and UPI clears 24 bn payments a month. Put the extras where the customer already is.",
+  w:["Weeks 1–4 · Build: WhatsApp post-booking flow for SmartBag91, Smart Ticket and an airport cab, with a UPI pay link","Weeks 5–8 · Test: random half of bookings get the flow; the other half keep today's journey","Weeks 9–12 · Decide: scale, iterate offers, or stop"],
+  m:"Ancillary ₹ per passenger, treated vs control",stop:"No meaningful uplift by day 60, or complaints rise",ask:"Today's attach rates and ancillary ₹ per passenger"},
+ {k:2,cs:"EXP-2 BNDL",lv:"Lever · Direct share & margin",t:"Destination bundles, sold direct",
+  why:"Lakshadweep needs a permit, a stay and a transfer. That's friction a bundle removes. FLY91 already sells packages with MakeMyTrip; this makes fly91.in the place the trip starts. Season runs Oct–May.",
+  w:["Weeks 1–4 · Build: flight + permit + stay + transfer as one checkout on fly91.in","Weeks 5–8 · Launch for the Lakshadweep season alongside MMT, not instead of it","Weeks 9–12 · Compare margin and direct share; pick the next market (Goa or Tirupati)"],
+  m:"Direct share of bookings; margin per booking vs the MMT channel",stop:"Margin per bundle below the flight-only baseline after 8 weeks",ask:"Package margins today, and the terms of the MMT agreement"},
+ {k:3,cs:"EXP-3 PASS",lv:"Lever · Repeat & loyalty seed",t:"FLY91 Pass: prepaid flexible trips",
+  why:"A 6- or 10-sector prepaid pass for business towns on the network (Jalgaon, Solapur, Hubballi, Pune–Goa). It grows the ₹599 corporate Smart Ticket into a recurring product, and the upfront cash supports the cash break-even target.",
+  w:["Weeks 1–4 · Design pass tiers and terms; recruit 20 SME pilot accounts via WhatsApp","Weeks 5–8 · Sell and fly passes; track how much of each pass gets used","Weeks 9–12 · Compare repeat trips with matched non-holders; decide on a loyalty programme"],
+  m:"Passes sold, share of each pass used, repeat trips vs matched non-holders",stop:"Fewer than half the pilot accounts buy, or passes go mostly unused",ask:"Is there corporate demand? How many repeat travellers are there on business routes?"}
+];
+$('#strips').innerHTML=X.map(x=>`<div class="strip" data-k="${x.k}" role="button" tabindex="0" aria-expanded="false">
+  <div><div class="cs">${x.cs}</div><div class="lv">90 days</div></div>
+  <div><div class="lv">${x.lv}</div><div class="tt">${x.t}</div></div>
+  <div><div class="lv">Metric</div><div style="font-size:14px">${x.m}</div></div>
+  <div class="more"><p style="margin-top:0">${x.why}</p><div class="weeks">${x.w.map(s=>{const[a,b]=s.split(' · ');return `<div><b>${a}</b>${b}</div>`}).join('')}</div>
+  <p><b>Stop if:</b> ${x.stop}<br><b>Target:</b> set with FLY91's data<br><b>Data needed:</b> ${x.ask}</p></div></div>`).join('');
+$$('.strip').forEach(s=>{const tg=()=>s.setAttribute('aria-expanded',s.getAttribute('aria-expanded')!=='true');s.onclick=tg;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tg()}}});
+addEventListener('resize',climb);
+})();
+</script>
+</body>
+</html>
