@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   deploy:
-    if: ${{ hashFiles('site/index.html') != '' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
